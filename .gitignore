@@ -14,6 +14,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+.idea/
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
@@ -23,3 +25,8 @@ go.work.sum
 
 # env file
 .env
+
+# Generated files
+*.gen.go
+*.pb.go
+*_mock.go
