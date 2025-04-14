@@ -1,0 +1,54 @@
+services:
+  pvz-service:
+    build: .
+    container_name: pvz-service
+    ports:
+      - "8080:8080"
+      - "3000:3000"
+      - "9000:9000"
+    environment:
+      - HTTP_HOST=localhost
+      - HTTP_PORT=8080
+      - ENV=dev
+      - JWT_SECRET=very_secret_key
+      - TOKEN_EXPIRATION=3600
+      - METRICS_PORT=9000
+      - METRICS_PATH=/metrics
+      - LOG_LEVEL=info
+      - GRPC_PORT=3000
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=pvz_service
+      - DB_SSLMODE=disable
+      - DB_MAX_IDLE_CONNS=5
+      - DB_MAX_OPEN_CONNS=25
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  db:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pvz_service
+    volumes:
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d pvz_service'"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
+networks:
+  internal:
