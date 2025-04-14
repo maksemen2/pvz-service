@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -98,7 +97,6 @@ func (m *jwtManager) Parse(tokenString string) (auth.Claims, error) {
 
 // NewJWTManager - конструктор для создания нового менеджера токенов на основе JWT.
 func NewJWTManager(config config.AuthConfig) auth.TokenManager {
-	fmt.Printf("Initializing JWT manager with duration: %d, current time is %d", config.TokenExpirationSeconds, time.Now().Unix())
 
 	return &jwtManager{
 		secretKey: []byte(config.JWTSecret),
