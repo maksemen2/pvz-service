@@ -16,5 +16,12 @@ linters:
     - whitespace
     - wsl
 
+issues:
+  exclude-dirs:
+    - internal/delivery/grpc/pvz_v1
+    - internal/delivery/http/httpdto
+  exclude-files:
+    - internal/pkg/metrics/metrics.go
+
 run:
   deadline: 3m
