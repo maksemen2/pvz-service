@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	domainerrors "github.com/maksemen2/pvz-service/internal/domain/errors"
 	"github.com/maksemen2/pvz-service/internal/domain/models"
@@ -11,7 +13,6 @@ import (
 	"github.com/maksemen2/pvz-service/internal/pkg/database"
 	databaseerrors "github.com/maksemen2/pvz-service/internal/repository/errors"
 	"go.uber.org/zap"
-	"time"
 )
 
 // postgresqlReceptionRepository реализует интерфейс repositories.IReceptionRepo
@@ -122,43 +123,16 @@ func (r *postgresqlReceptionRepository) CreateIfNoOpen(ctx context.Context, rece
 // CloseLast закрывает последнюю открывшуюся приемку в ПВЗ.
 // Если приемка не найдена, возвращает ошибку.
 func (r *postgresqlReceptionRepository) CloseLast(ctx context.Context, pvzID uuid.UUID) (*models.Reception, error) {
-	tx, err := r.db.BeginTxx(ctx, nil)
-	if err != nil {
-		r.logger.Error("failed to begin transaction", zap.Error(err))
-		return nil, databaseerrors.ErrUnexpected
-	}
-	defer database.TxRollback(tx, r.logger)
-
-	var receptionID uuid.UUID
-
-	err = tx.GetContext(ctx, &receptionID, `
-        SELECT id 
-        FROM receptions 
-        WHERE 
-            pvz_id = $1 AND 
-            status = 'in_progress' 
-        ORDER BY date_time DESC 
-        LIMIT 1`,
-		pvzID,
-	)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domainerrors.ErrNoOpenReceptions
-		}
-
-		r.logger.Error("failed to find open reception", zap.Error(err))
-
-		return nil, databaseerrors.ErrUnexpected
-	}
 
 	var receptionRow receptionRow
 
-	err = tx.GetContext(ctx, &receptionRow, `
+	err := r.db.GetContext(ctx, &receptionRow, `
         UPDATE receptions 
         SET status = 'close' 
-        WHERE id = $1
+        WHERE pvz_id = $1
+		AND status = 'in_progress'
         RETURNING id, date_time, pvz_id, status`,
-		receptionID,
+		pvzID,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -167,11 +141,6 @@ func (r *postgresqlReceptionRepository) CloseLast(ctx context.Context, pvzID uui
 
 		r.logger.Error("failed to close reception", zap.Error(err))
 
-		return nil, databaseerrors.ErrUnexpected
-	}
-
-	if err := tx.Commit(); err != nil {
-		r.logger.Error("failed to commit transaction", zap.Error(err))
 		return nil, databaseerrors.ErrUnexpected
 	}
 
