@@ -27,7 +27,19 @@ API сервер будет доступен по адресу http://localhost:
 ⚠️ Важно: генерируемые файлы (моки, dto и grpc) не добавлены в репозиторий. При развертии проекта в Docker они будут сгенерированы автоматически. 
 Для генерации вручную воспользуйтесь командой 
 ```make generate```
+Для этого у вас должны быть установлены protoc, oapi-codegen, mockgen и protoc-gen-go. 
+Для их установки воспользуйтесь командами:
+```
+apt update && apt install -y protobuf-compiler
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+```
 
+Или целью Makefile
+```
+make gen-install
+```
 
 ## Выполнение задания
 ### Основное задание
