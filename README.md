@@ -33,6 +33,7 @@ API сервер будет доступен по адресу http://localhost:
 apt update && apt install -y protobuf-compiler
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+go install go.uber.org/mock/mockgen@latest
 go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
 ```
 
