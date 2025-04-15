@@ -6,7 +6,14 @@ PROTOC_OUT_DIR = internal/delivery/grpc/pvz_v1
 PROTOC_GO_OUT = $(PROTOC_OUT_DIR)/pvz.pb.go
 PROTOC_GRPC_OUT = $(PROTOC_OUT_DIR)/pvz_grpc.pb.go
 
-.PHONY: generate lint lint-fix
+.PHONY: generate lint lint-fix gen-install test unit-tests integration-tests deploy
+
+gen-install:
+	apt update && apt install -y protobuf-compiler
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+
 
 generate-oapi:
 	@oapi-codegen \
